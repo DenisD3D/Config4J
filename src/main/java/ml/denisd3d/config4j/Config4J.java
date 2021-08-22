@@ -70,14 +70,14 @@ public abstract class Config4J {
     private void checkToRemovePath(String path, Object value) throws IllegalAccessException {
         for (Field field : value.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Path.class)) {
-                if (field.isAnnotationPresent(OnlyIf.class) && !config.contains(field.getAnnotation(Path.class).value())) {
-                    toRemovePaths.add(field.getAnnotation(Path.class).value());
+                if (field.isAnnotationPresent(OnlyIf.class) && !config.contains(path + field.getAnnotation(Path.class).value())) {
+                    toRemovePaths.add(path + field.getAnnotation(Path.class).value());
                 }
                 if ((field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType()))) {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);// Enforces field access if needed
                     }
-                    checkToRemovePath(path + field.getAnnotation(Path.class).value(), field.get(value));
+                    checkToRemovePath(path + field.getAnnotation(Path.class).value() + ".", field.get(value));
                 }
             }
         }
@@ -106,8 +106,8 @@ public abstract class Config4J {
             if (field.isAnnotationPresent(Path.class)) {
                 if (field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType())) {
                     if (field.isAnnotationPresent(OnlyIf.class) && !config.<Boolean>get(field.getAnnotation(OnlyIf.class).value())) {
-                        if (toRemovePaths.contains(field.getAnnotation(Path.class).value())) {
-                            config.remove(field.getAnnotation(Path.class).value()); // If Section wasn't present at load, don't add it
+                        if (toRemovePaths.contains(path + field.getAnnotation(Path.class).value())) {
+                            config.remove(path + field.getAnnotation(Path.class).value()); // If Section wasn't present at load, don't add it
                         }
                         continue; // OnlyIf target is false
                     }
@@ -115,7 +115,7 @@ public abstract class Config4J {
                         field.setAccessible(true);// Enforces field access if needed
                     }
                     mapField(path + field.getAnnotation(Path.class).value() + ".", field.get(value));
-                } else if (field.isAnnotationPresent(DefaultValue.class) && config.get(field.getAnnotation(Path.class).value()) == null) {
+                } else if (field.isAnnotationPresent(DefaultValue.class) && config.get(path + field.getAnnotation(Path.class).value()) == null) {
                     config.set(path + field.getAnnotation(Path.class).value(), translator.apply(field.getAnnotation(DefaultValue.class).value()));
                     save_need_reload = true;
                 }
