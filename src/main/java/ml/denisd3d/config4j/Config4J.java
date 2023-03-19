@@ -1,5 +1,6 @@
 package ml.denisd3d.config4j;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.conversion.ForceBreakdown;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
@@ -89,7 +90,7 @@ public abstract class Config4J {
         converter.toConfig(this, config);
 
         try {
-            mapField("", this);
+            mapField(config, "", this);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -101,7 +102,7 @@ public abstract class Config4J {
         config.save();
     }
 
-    private void mapField(String path, Object value) throws IllegalAccessException {
+    private void mapField(CommentedConfig config, String path, Object value) throws IllegalAccessException {
         for (Field field : value.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Path.class)) {
                 if (field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType())) {
@@ -114,7 +115,7 @@ public abstract class Config4J {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);// Enforces field access if needed
                     }
-                    mapField(path + field.getAnnotation(Path.class).value() + ".", field.get(value));
+                    mapField(config, path + field.getAnnotation(Path.class).value() + ".", field.get(value));
                 } else if (field.isAnnotationPresent(DefaultValue.class) && config.get(path + field.getAnnotation(Path.class).value()) == null) {
                     config.set(path + field.getAnnotation(Path.class).value(), translator.apply(field.getAnnotation(DefaultValue.class).value()));
                     save_need_reload = true;
@@ -122,6 +123,16 @@ public abstract class Config4J {
 
                 if (field.isAnnotationPresent(Comment.class)) {
                     config.setComment(path + field.getAnnotation(Path.class).value(), translator.apply(field.getAnnotation(Comment.class).value()));
+                }
+
+                if (config.get(path + field.getAnnotation(Path.class).value()) instanceof List<?>) {
+                    List<?> configs = config.get(path + field.getAnnotation(Path.class).value());
+                    for (int i = 0; i < configs.size(); i++) {
+                        Object o = configs.get(i);
+                        if (o instanceof CommentedConfig) {
+                            mapField((CommentedConfig) o, "", ((ArrayList<?>) field.get(value)).get(i));
+                        }
+                    }
                 }
             }
         }
