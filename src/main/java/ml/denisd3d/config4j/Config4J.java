@@ -61,7 +61,7 @@ public abstract class Config4J {
                 }
                 Object subconfig = config.get(path + field.getAnnotation(Path.class).value());
                 if (subconfig != null && subconfig instanceof Config) { // Not instanceof Config if Converter used
-                    converter.toObject(subconfig, field.get(value));
+                    converter.toObject((Config)subconfig, field.get(value));
                     mapConfig(path + field.getAnnotation(Path.class).value() + ".", field.get(value));
                 }
             }
