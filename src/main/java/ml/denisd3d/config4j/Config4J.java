@@ -2,6 +2,7 @@ package ml.denisd3d.config4j;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.conversion.Conversion;
 import com.electronwill.nightconfig.core.conversion.ForceBreakdown;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
 import com.electronwill.nightconfig.core.conversion.Path;
@@ -74,7 +75,7 @@ public abstract class Config4J {
                 if (field.isAnnotationPresent(OnlyIf.class) && !config.contains(path + field.getAnnotation(Path.class).value())) {
                     toRemovePaths.add(path + field.getAnnotation(Path.class).value());
                 }
-                if ((field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType()))) {
+                if ((field.isAnnotationPresent(ForceBreakdown.class) || (!config.configFormat().supportsType(field.getType())) && !field.isAnnotationPresent(Conversion.class))) {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);// Enforces field access if needed
                     }
