@@ -60,9 +60,9 @@ public abstract class Config4J {
                 if (!field.isAccessible()) {
                     field.setAccessible(true); // Enforces field access if needed
                 }
-                Config subconfig = config.get(path + field.getAnnotation(Path.class).value());
-                if (subconfig != null) {
-                    converter.toObject(subconfig, field.get(value));
+                Object subconfig = config.get(path + field.getAnnotation(Path.class).value());
+                if (subconfig != null && subconfig instanceof Config) { // Not instanceof Config if Converter used
+                    converter.toObject((Config)subconfig, field.get(value));
                     mapConfig(path + field.getAnnotation(Path.class).value() + ".", field.get(value));
                 }
             }
