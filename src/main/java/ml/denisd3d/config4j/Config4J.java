@@ -56,7 +56,7 @@ public abstract class Config4J {
 
     private void mapConfig(String path, Object value) throws IllegalAccessException {
         for (Field field : value.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(Path.class) && (field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType()))) {
+            if (field.isAnnotationPresent(Path.class) && (field.isAnnotationPresent(ForceBreakdown.class) || (!config.configFormat().supportsType(field.getType()) && !field.isAnnotationPresent(Conversion.class)))) {
                 if (!field.isAccessible()) {
                     field.setAccessible(true); // Enforces field access if needed
                 }
@@ -75,7 +75,7 @@ public abstract class Config4J {
                 if (field.isAnnotationPresent(OnlyIf.class) && !config.contains(path + field.getAnnotation(Path.class).value())) {
                     toRemovePaths.add(path + field.getAnnotation(Path.class).value());
                 }
-                if ((field.isAnnotationPresent(ForceBreakdown.class) || (!config.configFormat().supportsType(field.getType())) && !field.isAnnotationPresent(Conversion.class))) {
+                if (field.isAnnotationPresent(ForceBreakdown.class) || (!config.configFormat().supportsType(field.getType()) && !field.isAnnotationPresent(Conversion.class))) {
                     if (!field.isAccessible()) {
                         field.setAccessible(true);// Enforces field access if needed
                     }
@@ -106,7 +106,7 @@ public abstract class Config4J {
     private void mapField(CommentedConfig config, String path, Object value) throws IllegalAccessException {
         for (Field field : value.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(Path.class)) {
-                if (field.isAnnotationPresent(ForceBreakdown.class) || !config.configFormat().supportsType(field.getType())) {
+                if (field.isAnnotationPresent(ForceBreakdown.class) || (!config.configFormat().supportsType(field.getType()) && !field.isAnnotationPresent(Conversion.class))) {
                     if (field.isAnnotationPresent(OnlyIf.class) && !config.<Boolean>get(field.getAnnotation(OnlyIf.class).value())) {
                         if (toRemovePaths.contains(path + field.getAnnotation(Path.class).value())) {
                             config.remove(path + field.getAnnotation(Path.class).value()); // If Section wasn't present at load, don't add it
