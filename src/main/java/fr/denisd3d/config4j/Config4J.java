@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.conversion.*;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.ParsingException;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -60,7 +61,7 @@ public abstract class Config4J {
         try {
             convertConfigToObject(config, "", this); // Map the config to the object
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new ParsingException(e.getMessage());
         }
     }
 
@@ -103,7 +104,7 @@ public abstract class Config4J {
         try {
             finishConvertFieldToConfig(config, this);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new ParsingException(e.getMessage());
         }
 
         removeOnlyIfValues(config);
