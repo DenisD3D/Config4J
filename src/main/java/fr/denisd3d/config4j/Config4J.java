@@ -137,7 +137,7 @@ public abstract class Config4J {
                 }
             }
 
-            if (config.get(getPartialPath(field)) instanceof Collection<?>) {
+            if (config.get(getPartialPath(field)) instanceof Collection<?> && getConverter(field) == null) { // If the field has a converter, let the converter handle the field
                 Collection<?> configs = config.get(getPartialPath(field));
                 Collection<?> objects = (Collection<?>) field.get(value);
 
