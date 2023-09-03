@@ -124,15 +124,20 @@ public abstract class Config4J {
             if (!field.isAnnotationPresent(Path.class))
                 continue; // Skip if current field not part of the config
 
-            if (hasDefaultValue(field)) {
-                if (config.get(getPartialPath(field)) == null) {
+            if (config.get(getPartialPath(field)) == null) {
+                if (hasDefaultValue(field)) {
                     // If the field does not exist, set the default value
                     String defaultValue = getDefaultValue(field);
                     config.set(getPartialPath(field), defaultValue);
                     Converter<Object, Object> converter = getConverter(field); // If the field has a converter, use it to get correct default value
                     field.set(value, converter != null ? converter.convertToField(defaultValue) : defaultValue); // Set the field value
+                } else {
+                    // If the field does not exist and has no default value, set it to null
+                    config.remove(getPartialPath(field));
                 }
-            } else if (config.get(getPartialPath(field)) instanceof Collection<?>) {
+            }
+
+            if (config.get(getPartialPath(field)) instanceof Collection<?>) {
                 Collection<?> configs = config.get(getPartialPath(field));
                 Collection<?> objects = (Collection<?>) field.get(value);
 
@@ -143,7 +148,9 @@ public abstract class Config4J {
                         finishConvertFieldToConfig(subconfig, iterator_objects.next());
                     }
                 }
-            } else if (shouldBreakDown(field)) { // If the field should be break down, process the subfields
+            }
+
+            if (shouldBreakDown(field)) { // If the field should be break down, process the subfields
                 finishConvertFieldToConfig(config.get(getPartialPath(field)), field.get(value));
             }
 
