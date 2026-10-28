@@ -3,16 +3,22 @@ plugins {
     `maven-publish`
 }
 
-version = "1.1.6"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api(group = "com.electronwill.night-config", name = "core", version = "3.6.6")
+    api("com.electronwill.night-config:toml:3.9.0")
+}
 
-    testImplementation(group = "com.electronwill.night-config", name = "toml", version = "3.6.6")
+tasks.compileJava {
+    options.release = 17 // Same as jitpack.yml, whatever JDK runs Gradle
+}
+
+tasks.test {
+    failOnNoDiscoveredTests = false // src/test only contains an example, no unit tests
 }
 
 tasks.jar {
